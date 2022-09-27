@@ -37,13 +37,12 @@ class Elevator(object):
             if elevator_floor != slow_floor:
                 yield self.env.timeout(self.normal_speed)
                 print(f"{name}:  Located at Floor {elevator_floor+bias} at {env.now:.2f}")
+                current_floor = elevator_floor+bias
             else:
                 yield self.env.timeout(self.stop_speed)
                 print(f"{name}:  Doors open on Floor {floor} at {env.now:.2f}")
-           
-        current_floor = floor   
+                current_floor = elevator_floor+bias 
 
-        # travel_time = (abs(floor - self.current_floor)-1)*self.normal_speed + self.stop_speed
         yield self.env.timeout(2)
         print(f'Doors close at {env.now:.2f}')
         
@@ -59,18 +58,22 @@ def setup(env, num_elevators, normal_speed, stop_speed, current_elevator_floor):
 
     building_elevator = Elevator(env, num_elevators, normal_speed, stop_speed, current_elevator_floor)
 
-    # # Create 4 initial calls
-    # for i in range(4):
-    #     env.process(user(env, f'Button Press {i}', building_elevator, random.randint(1,19)))
-    env.process(user(env, 'Button Press 1', building_elevator, 12))
-    yield env.timeout(60)
-    env.process(user(env, 'Button Press 2', building_elevator, 6))
-    # # Create more button presses while the simulation is running
-    # i =1
-    # while True:
-    #     yield env.timeout(random.randint(1,12))
-    #     i += 1
-    #     env.process(user(env, f'Button Press {i}', building_elevator, random.randint(1,19)))
+    # # Create test cases
+    # env.process(user(env, 'Button Press 1', building_elevator, 12))
+    # yield env.timeout(20)
+    # env.process(user(env, 'Button Press 2', building_elevator, 6))
+    
+    # Create 4 initial calls
+    for i in range(4):
+        env.process(user(env, f'Button Press {i+1}', building_elevator, random.randint(1,19)))
+        yield env.timeout(1)
+
+
+    # Create more button presses while the simulation is running
+    while True:
+        yield env.timeout(random.randint(1,12))
+        i += 1
+        env.process(user(env, f'Button Press {i}', building_elevator, random.randint(1,19)))
 
 
 # Setup and start the simulation
