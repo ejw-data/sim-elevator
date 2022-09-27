@@ -1,4 +1,3 @@
-from ast import Global
 import random
 import simpy
 
