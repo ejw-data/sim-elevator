@@ -42,9 +42,22 @@ class Elevator(object):
                 yield self.env.timeout(self.stop_speed)
                 print(f"{name}:  Doors open on Floor {floor} at {env.now:.2f}")
                 current_floor = elevator_floor+bias 
+                
 
         yield self.env.timeout(2)
         print(f'Doors close at {env.now:.2f}')
+
+        #  select new floor destination
+        #  initially make it go to floor one
+        first_floor = 1
+        for elevator_floor in range(current_floor-1, 0,-1):
+            if elevator_floor != first_floor:
+                yield self.env.timeout(self.normal_speed)
+                print(f"{name}:  Located at Floor {elevator_floor} at {env.now:.2f}")
+                current_floor = elevator_floor -1 
+            else:
+                yield self.env.timeout(self.stop_speed)
+                print(f"{name}:  Doors open on Floor 1 at {env.now:.2f}")
         
 def user(env, name, elevator_instance, call_floor):
     print(f'{name} occurs at {env.now:.2f}.')
@@ -65,13 +78,13 @@ def setup(env, num_elevators, normal_speed, stop_speed, current_elevator_floor):
     
     # Create 4 initial calls
     for i in range(4):
-        env.process(user(env, f'Button Press {i+1}', building_elevator, random.randint(1,19)))
+        env.process(user(env, f'Button Press {i+1}', building_elevator, random.randint(2,19)))
         yield env.timeout(1)
 
 
     # Create more button presses while the simulation is running
     while True:
-        yield env.timeout(random.randint(1,12))
+        yield env.timeout(random.randint(2,12))
         i += 1
         env.process(user(env, f'Button Press {i}', building_elevator, random.randint(1,19)))
 
