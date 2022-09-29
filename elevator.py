@@ -10,7 +10,10 @@ STOP_SPEED_ELEVATOR = 5
 # WASHTIME = 5      # Minutes it takes to clean a car
 REQUEST_INTERVAL = 7       # Create a car every ~7 minutes
 SIM_TIME = 120     # Simulation time in minutes
+
+# current_floor tracking doesn't work for multi-elevator system
 current_floor = 1
+total_trips = 0
 
 class Elevator(object):
 
@@ -23,29 +26,30 @@ class Elevator(object):
 
     def call(self, name, floor):
         global current_floor 
+        global total_trips
 
         if current_floor > floor:
             elevator_path = range(current_floor, floor, -1)
             slow_floor = floor + 1
-            bias = -1
+            direction = -1
         else:
             elevator_path = range(current_floor, floor)
             slow_floor = floor - 1
-            bias = 1
+            direction = 1
 
         for elevator_floor in elevator_path:
             if elevator_floor != slow_floor:
                 yield self.env.timeout(self.normal_speed)
                 print(f"{name}:  Located at Floor {elevator_floor+bias} at {env.now:.2f}")
-                current_floor = elevator_floor+bias
+                current_floor = elevator_floor + direction
             else:
                 yield self.env.timeout(self.stop_speed)
                 print(f"{name}:  Doors open on Floor {floor} at {env.now:.2f}")
-                current_floor = elevator_floor+bias 
+                current_floor = elevator_floor + direction
                 
 
         yield self.env.timeout(2)
-        print(f'Doors close at {env.now:.2f}')
+        print(f'{name}: Doors close at {env.now:.2f}')
 
         #  select new floor destination
         #  initially make it go to floor one
@@ -58,7 +62,8 @@ class Elevator(object):
             else:
                 yield self.env.timeout(self.stop_speed)
                 print(f"{name}:  Doors open on Floor 1 at {env.now:.2f}")
-        
+                total_trips += 1
+
 def user(env, name, elevator_instance, call_floor):
     print(f'{name} occurs at {env.now:.2f}.')
     with elevator_instance.elevator.request() as request:
@@ -101,3 +106,4 @@ env.process(setup(env, NUMBER_ELEVATORS, NORMAL_SPEED_ELEVATOR, STOP_SPEED_ELEVA
 # Execute!
 env.run(until=SIM_TIME)
 print(f"Elevator is on Floor {current_floor}")
+print(f"Total Completed Trips:  {total_trips}")
