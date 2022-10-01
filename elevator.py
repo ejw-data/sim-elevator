@@ -40,7 +40,7 @@ class Elevator(object):
         for elevator_floor in elevator_path:
             if elevator_floor != slow_floor:
                 yield self.env.timeout(self.normal_speed)
-                print(f"{name}:  Located at Floor {elevator_floor+bias} at {env.now:.2f}")
+                print(f"{name}:  Located at Floor {elevator_floor+direction} at {env.now:.2f}")
                 current_floor = elevator_floor + direction
             else:
                 yield self.env.timeout(self.stop_speed)
