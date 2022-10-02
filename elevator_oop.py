@@ -4,17 +4,15 @@
 import random
 import simpy
 
-
-RANDOM_SEED = 42
-NUMBER_ELEVATORS = 1
-NORMAL_SPEED_ELEVATOR = 3
-STOP_SPEED_ELEVATOR = 5
-
-# WASHTIME = 5      # Minutes it takes to clean a car
-REQUEST_INTERVAL = 7       # Create a car every ~7 minutes
-SIM_TIME = 120     # Simulation time in minutes
+class ModelConstants:
+    random_seed = 42
+    number_elevators = 1
+    normal_speed_elevator = 3
+    stop_speed_elevator = 5
+    sim_time = 120
 
 # current_floor tracking doesn't work for multi-elevator system
+# Global Variables
 current_floor = 1
 total_trips = 0
 
@@ -100,13 +98,22 @@ def setup(env, num_elevators, normal_speed, stop_speed, current_elevator_floor):
 # Setup and start the simulation
 print('Elevator')
 
-random.seed(RANDOM_SEED)  # This helps reproducing the results
+# This helps reproducing the results
+random.seed(ModelConstants.random_seed)  
 
 # Create an environment and start the setup process
 env = simpy.Environment()
-env.process(setup(env, NUMBER_ELEVATORS, NORMAL_SPEED_ELEVATOR, STOP_SPEED_ELEVATOR, current_floor))
+env.process(
+    setup(
+        env, 
+        ModelConstants.number_elevators, 
+        ModelConstants.normal_speed_elevator,
+        ModelConstants.stop_speed_elevator, 
+        current_floor
+        )
+    )
 
 # Execute!
-env.run(until=SIM_TIME)
+env.run(until=ModelConstants.sim_time)
 print(f"Elevator is on Floor {current_floor}")
 print(f"Total Completed Trips:  {total_trips}")
