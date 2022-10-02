@@ -25,6 +25,14 @@ class ElevatorBank(object):
         self.stop_speed = stop_speed
         self.current_floor = current_elevator_floor
 
+    def add_elevator(self):
+        pass
+        # future code for adding an elevator to model
+
+    def remove_elevator(self):
+        pass
+        # future code for taking existing elevator out of service
+
     def call(self, name, floor):
         global current_floor 
         global total_trips
