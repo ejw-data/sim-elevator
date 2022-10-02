@@ -1,3 +1,6 @@
+# Converstion of simpy model to Object Oriented
+# - aids in structuring the code
+
 import random
 import simpy
 
