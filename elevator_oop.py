@@ -28,7 +28,7 @@ class ElevatorBank:
     def __init__(self):
         self.env = simpy.Environment()
         self.elevator = simpy.Resource(self.env, ModelConstants.number_elevators)
-        self.elevator_info = simpy.FilterStore(self.env, ModelConstants.number_elevators)
+        # self.elevator_info = simpy.FilterStore(self.env, ModelConstants.number_elevators)
         self.user_counter = 0
         self.registered_elevators = 0
         self.elevator_name = []
@@ -41,7 +41,7 @@ class ElevatorBank:
         elevator_name = f"Elevator_{self.registered_elevators}"
         self.elevator_name.append(elevator_name)
         self.elevator_location[elevator_name] = 1
-        self.elevator_info.put({'id':elevator_name, 'floor':1})
+        # self.elevator_info.put({'id':elevator_name, 'floor':1})
 
     def remove_elevator(self):
         pass
@@ -58,11 +58,8 @@ class ElevatorBank:
 
     def user_request(self, user):
         print(f'{user.name} occurs at {self.env.now:.2f}.')
-        with self.elevator.get() as request:
+        with self.elevator.request() as request:
             yield request 
-
-            m = yield self.elevator.get('id')
-            print("Filtered Resource: ", m)
 
             print(f'{user.name}:  Elevator begins to move from Floor {user.initial_floor} to Floor {user.destination} at {self.env.now:.2f}.')
             yield self.env.process(self.call(user.name, user.destination))
