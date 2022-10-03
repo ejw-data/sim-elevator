@@ -28,13 +28,20 @@ class ElevatorBank:
     def __init__(self):
         self.env = simpy.Environment()
         self.elevator = simpy.Resource(self.env, ModelConstants.number_elevators)
+        self.elevator_info = simpy.FilterStore(self.env, ModelConstants.number_elevators)
         self.user_counter = 0
+        self.registered_elevators = 0
+        self.elevator_name = []
+        self.elevator_location = {}
         # self.current_floor = 1 # need to change
 
 
     def add_elevator(self):
-        pass
-        # future code for adding an elevator to model
+        self.registered_elevators += 1
+        elevator_name = f"Elevator_{self.registered_elevators}"
+        self.elevator_name.append(elevator_name)
+        self.elevator_location[elevator_name] = 1
+        self.elevator_info.put({'id':elevator_name, 'floor':1})
 
     def remove_elevator(self):
         pass
@@ -46,14 +53,17 @@ class ElevatorBank:
 
         # while True:
         self.user_counter += 1
-        print(f"Generating Button Press {self.user_counter}")
         new_user = User(self.user_counter, initial_floor, destination)
         yield self.env.process(self.user_request(new_user))
 
     def user_request(self, user):
         print(f'{user.name} occurs at {self.env.now:.2f}.')
-        with self.elevator.request() as request:
-            yield request   
+        with self.elevator.get() as request:
+            yield request 
+
+            m = yield self.elevator.get('id')
+            print("Filtered Resource: ", m)
+
             print(f'{user.name}:  Elevator begins to move from Floor {user.initial_floor} to Floor {user.destination} at {self.env.now:.2f}.')
             yield self.env.process(self.call(user.name, user.destination))
 
@@ -97,8 +107,14 @@ class ElevatorBank:
                 print(f"{name}:  Doors open on Floor 1 at {self.env.now:.2f}")
                 total_trips += 1
 
+        yield self.env.timeout(2)
+        print(f'{name}: Doors close at {self.env.now:.2f}')
+
     def setup(self):
-        print("Setup Started")
+        # create elevator lists
+        for _ in range(ModelConstants.number_elevators):
+            self.add_elevator()
+
         # Create 4 initial calls
         for _ in range(4):
             yield self.env.timeout(1)
@@ -120,3 +136,5 @@ class ElevatorBank:
 # Run model
 my_model = ElevatorBank()
 my_model.run()
+
+print(my_model.elevator_location)
