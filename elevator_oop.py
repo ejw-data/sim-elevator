@@ -6,14 +6,13 @@ import simpy
 
 class ModelConstants:
     random_seed = 42
-    number_elevators = 1
+    number_elevators = 2
     normal_speed_elevator = 3
     stop_speed_elevator = 5
     sim_duration = 120
 
 # current_floor tracking doesn't work for multi-elevator system
 # Global Variables
-current_floor = 1
 total_trips = 0
 
 class User:
@@ -28,20 +27,27 @@ class ElevatorBank:
     def __init__(self):
         self.env = simpy.Environment()
         self.elevator = simpy.Resource(self.env, ModelConstants.number_elevators)
-        # self.elevator_info = simpy.FilterStore(self.env, ModelConstants.number_elevators)
+        self.elevator_info = simpy.FilterStore(self.env, ModelConstants.number_elevators)
         self.user_counter = 0
         self.registered_elevators = 0
-        self.elevator_name = []
-        self.elevator_location = {}
-        # self.current_floor = 1 # need to change
+        self.total_floors = {}
+        self.elevator_trips = {}
+        self.elevator_floor = {}
 
 
     def add_elevator(self):
         self.registered_elevators += 1
         elevator_name = f"Elevator_{self.registered_elevators}"
-        self.elevator_name.append(elevator_name)
-        self.elevator_location[elevator_name] = 1
-        # self.elevator_info.put({'id':elevator_name, 'floor':1})
+        self.total_floors[elevator_name] = 0
+        self.elevator_trips[elevator_name] = 0
+        self.elevator_floor[elevator_name] = 1
+        self.elevator_info.put({
+            'id':self.registered_elevators, 
+            'name':elevator_name, 
+            'current_floor':1,
+            'trips':0
+            }
+        )
 
     def remove_elevator(self):
         pass
@@ -61,13 +67,16 @@ class ElevatorBank:
         with self.elevator.request() as request:
             yield request 
 
+            checkout_elevator = yield self.elevator_info.get()
+            print(f"Trial {user.id:<3} Time {self.env.now:<5} {checkout_elevator['name']} Starts")
+
             print(f'{user.name}:  Elevator begins to move from Floor {user.initial_floor} to Floor {user.destination} at {self.env.now:.2f}.')
-            yield self.env.process(self.call(user.name, user.destination))
+            yield self.env.process(self.call(checkout_elevator, user.name, user.destination))
 
-    def call(self, name, floor):
-        global current_floor 
+    def call(self, elevator, name, floor):
         global total_trips
-
+        current_floor = elevator['current_floor']
+        
         if current_floor > floor:
             elevator_path = range(current_floor, floor, -1)
             slow_floor = floor + 1
@@ -82,11 +91,16 @@ class ElevatorBank:
                 yield self.env.timeout(ModelConstants.normal_speed_elevator)
                 print(f"{name}:  Located at Floor {elevator_floor+direction} at {self.env.now:.2f}")
                 current_floor = elevator_floor + direction
+                self.total_floors[elevator['name']] += 1
+                elevator['current_floor'] = current_floor
+                self.elevator_floor[elevator['name']] = current_floor
             else:
                 yield self.env.timeout(ModelConstants.stop_speed_elevator)
                 print(f"{name}:  Doors open on Floor {floor} at {self.env.now:.2f}")
                 current_floor = elevator_floor + direction
-                
+                self.total_floors[elevator['name']] += 1
+                elevator['current_floor'] = current_floor
+                self.elevator_floor[elevator['name']] = current_floor
 
         yield self.env.timeout(2)
         print(f'{name}: Doors close at {self.env.now:.2f}')
@@ -99,13 +113,23 @@ class ElevatorBank:
                 yield self.env.timeout(ModelConstants.normal_speed_elevator)
                 print(f"{name}:  Located at Floor {elevator_floor} at {self.env.now:.2f}")
                 current_floor = elevator_floor -1 
+                self.total_floors[elevator['name']] += 1
+                elevator['current_floor'] = current_floor
+                self.elevator_floor[elevator['name']] = current_floor
             else:
                 yield self.env.timeout(ModelConstants.stop_speed_elevator)
                 print(f"{name}:  Doors open on Floor 1 at {self.env.now:.2f}")
                 total_trips += 1
+                current_floor = elevator_floor -1 
+                self.total_floors[elevator['name']] += 1
+                elevator['trips'] += 1
+                self.elevator_floor[elevator['name']] = current_floor
+                self.elevator_trips[elevator['name']] += 1
 
         yield self.env.timeout(2)
         print(f'{name}: Doors close at {self.env.now:.2f}')
+
+        yield self.elevator_info.put(elevator)
 
     def setup(self):
         # create elevator lists
@@ -127,11 +151,13 @@ class ElevatorBank:
         random.seed(ModelConstants.random_seed)  
         self.env.process(self.setup())
         self.env.run(until=ModelConstants.sim_duration)
-        print(f"Elevator is on Floor {current_floor}")
+        # print(f"Elevator is on Floor {current_floor}")
         print(f"Total Completed Trips:  {total_trips}")
 
 # Run model
 my_model = ElevatorBank()
 my_model.run()
 
-print(my_model.elevator_location)
+print('Trips Completed: ', my_model.elevator_trips)
+print("Elevator Locations: ", my_model.elevator_floor)
+print("Total Distance (floors): ", my_model.total_floors)

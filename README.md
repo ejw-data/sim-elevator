@@ -29,4 +29,7 @@ pySim of an elevator system
 
 ### Phase 5 (current)
 
-- Need to integrate `scheduling_test_store.py` verified method into main script - `elevator_oop.py`.  
+- Integrated `scheduling_test_store.py` verified method into main script - `elevator_oop.py`.  
+- Need to validate results
+- Need to clean printout results
+- Need to store trip results as dataframe or csv
