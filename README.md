@@ -1,9 +1,14 @@
 # sim-elevator
-pySim of an elevator system
 
+Author:  Erin James Wills, ejw.data@gmail.com  
 
-## Notes:
-<hr>
+![Elevator Simulation](./images/elevator-simpy.png)  
+<cite>Photo by <a href="https://unsplash.com/@mbuff?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Sung Jin Cho</a> on <a href="https://unsplash.com/s/photos/elevator?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Unsplash</a></cite>
+<br>
+
+## Overview  
+<hr>  
+Discrete event simulation of an elevator system using the simpy library.   
 
 ### Phase 1
 - Developed procedural model using functions/generators with simpy
@@ -33,3 +38,29 @@ pySim of an elevator system
 - Need to validate results
 - Need to clean printout results
 - Need to store trip results as dataframe or csv
+
+
+<br>
+
+## Technologies    
+*  Python
+
+<br>
+
+
+## Data Source  
+No external data was used for this project.  All numbers used were estimates or randomly selected.
+
+<br>
+
+## Setup and Installation  
+1. Environment needs the following:  
+    *  Python 3.6+   
+    *  simpy
+    *  random
+1. Activate your environment
+1. Clone the repo to your local machine
+1. Navigate the terminal to the repo folder
+1. In the terminal, run `python elevator.py`  
+
+<br>

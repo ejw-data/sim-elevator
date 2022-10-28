@@ -1,5 +1,3 @@
-# Converstion of simpy model to Object Oriented
-# - aids in structuring the code
 
 import random
 import simpy
@@ -10,6 +8,8 @@ class ModelConstants:
     normal_speed_elevator = 3
     stop_speed_elevator = 5
     sim_duration = 600
+    # Floors in building
+
 
 # current_floor tracking doesn't work for multi-elevator system
 # Global Variables
@@ -92,6 +92,7 @@ class ElevatorBank:
                 print(f"{name}:  Located at Floor {elevator_floor+direction} at {self.env.now:.2f}")
                 current_floor = elevator_floor + direction
                 self.total_floors[elevator['name']] += 1
+                # convert below to be elevator bank property
                 elevator['current_floor'] = current_floor
                 self.elevator_floor[elevator['name']] = current_floor
             else:
@@ -119,6 +120,7 @@ class ElevatorBank:
             else:
                 yield self.env.timeout(ModelConstants.stop_speed_elevator)
                 print(f"{name}:  Doors open on Floor 1 at {self.env.now:.2f}")
+                # convert below to class parameter
                 total_trips += 1
                 current_floor = elevator_floor -1 
                 self.total_floors[elevator['name']] += 1
